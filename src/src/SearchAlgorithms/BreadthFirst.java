@@ -1,20 +1,20 @@
 package src.SearchAlgorithms;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import src.Data.DirectedEdge;
-import src.Data.Graph;
+import src.Data.Action;
 import src.Data.Node;
 import src.Data.Problem;
+import src.Data.Result;
+import src.Data.Solution;
 import src.Data.States;
 
-public class BreadthFirst implements SearchAlgorithm {
+public class BreadthFirst extends SearchAlgorithm {
 
-	private final Node failureNode = new Node(States.Failure);
-	private Node solutionNode;
-	private ConcurrentLinkedQueue<Node> q;
-	private ArrayList<States> marked;
+	private Problem problem;
+	private ConcurrentLinkedQueue<Node> frontier;
+	private HashSet<States> explored;
 
 	/**
 	 * Takes a new problem and runs the algorithm on it.
@@ -23,11 +23,13 @@ public class BreadthFirst implements SearchAlgorithm {
 	 */
 	public BreadthFirst(Problem p) {
 
-		this.q = new ConcurrentLinkedQueue<Node>();
-		this.marked = new ArrayList<States>();
-		Node initial = new Node(p.initialState());
-		q.add(initial);
-		this.solutionNode = bfs(p.getStateSpace());
+		this.problem = p;
+		this.frontier = new ConcurrentLinkedQueue<Node>();
+		frontier.add(new Node(p.initialState()));
+
+		this.explored = new HashSet<States>();
+
+		result = bfs();
 
 	}
 
@@ -39,37 +41,29 @@ public class BreadthFirst implements SearchAlgorithm {
 	 * @return A Node structure containing, upon success, the solution node. If no
 	 *         solution was found, a Failure Node shall be returned
 	 */
-	private Node bfs(Graph g) {
+	private Result bfs() {
 
 		while (true) {
 
-			if (q.isEmpty())
-				return this.failureNode;
+			if (frontier.isEmpty())
+				return failureRes;
 
-			Node x = q.poll();
-			marked.add(x.getState());
+			Node node = frontier.poll();
+			explored.add(node.getState());
 
-			for (DirectedEdge w : g.adj(x.getState().ordinal())) {
+			for (Action action : problem.actions(node.getState())) {
 
-				// Create child node
-				ArrayList<DirectedEdge> tmp = new ArrayList<DirectedEdge>(x.getSol());
-				tmp.add(w);
-				Node y = new Node(w.to(), x.getPC() + w.weight(), tmp);
+				Node child = new Node(problem, node, action);
 
-				if (!marked.contains(y.getState()) && !q.contains(y)) {
+				if (!explored.contains(child.getState()) && !frontier.contains(child)) {
 
-					if (y.goalTest())
-						return y;
+					if (problem.goalTest(child.getState())) // Goaltest
+						return new Solution(child);
 
-					q.add(y);
+					frontier.add(child);
 				}
 			}
 		}
-	}
-
-	public void printSolution() {
-		System.out.println("Breadth First Search: ");
-		this.solutionNode.printNode();
 	}
 
 }

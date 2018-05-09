@@ -1,19 +1,19 @@
 package src.SearchAlgorithms;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Stack;
 
-import src.Data.DirectedEdge;
-import src.Data.Graph;
+import src.Data.Action;
 import src.Data.Node;
 import src.Data.Problem;
+import src.Data.Result;
+import src.Data.Solution;
 import src.Data.States;
 
-public class DepthFirst implements SearchAlgorithm {
+public class DepthFirst extends SearchAlgorithm {
 
-	private Node solutionNode;
-	private ArrayList<States> marked;
-	private boolean haveSol;
+	private HashSet<States> explored;
+	private boolean reached;
 
 	/**
 	 * This constructor takes the problem to be solved and runs dfs on it.
@@ -23,10 +23,10 @@ public class DepthFirst implements SearchAlgorithm {
 	 */
 	public DepthFirst(Problem p) {
 
-		haveSol = false;
+		reached = false;
 		new Stack<Node>();
-		this.marked = new ArrayList<States>();
-		this.solutionNode = (dfs(p.getStateSpace(), new Node(p.initialState())));
+		this.explored = new HashSet<States>();
+		result = dfs(p, new Node(p.initialState()));
 
 	}
 
@@ -40,41 +40,32 @@ public class DepthFirst implements SearchAlgorithm {
 	 *            the node expanding
 	 * @return node with the solution upon success, null otherwise.
 	 */
-	private Node dfs(Graph g, Node x) {
+	private Result dfs(Problem problem, Node node) {
 
-		Node sol = null;
+		Result sol = failureRes;
 
-		marked.add(x.getState());
+		explored.add(node.getState());
 
-		for (DirectedEdge w : g.adj(x.getState().ordinal())) {
+		for (Action action : problem.actions(node.getState())) {
 
-			if (!haveSol) {
-				// Create child node
-				ArrayList<DirectedEdge> tmp = new ArrayList<DirectedEdge>(x.getSol());
-				tmp.add(w);
-				Node y = new Node(w.to(), x.getPC() + w.weight(), tmp);
+			if (!reached) {
 
-				if (!marked.contains(y.getState())) {
+				Node child = new Node(problem, node, action);
 
-					if (y.goalTest()) {
-						haveSol = true;
-						return y;
+				if (!explored.contains(child.getState())) {
+
+					if (problem.goalTest(child.getState())) {
+						reached = true;
+						return new Solution(child);
 					}
 
-					sol = dfs(g, y);
+					sol = dfs(problem, child);
 				}
 			}
 		}
 
 		return sol;
 
-	}
-
-	@Override
-	public void printSolution() {
-		// TODO Auto-generated method stub
-		System.out.println("Depth First:");
-		this.solutionNode.printNode();
 	}
 
 }

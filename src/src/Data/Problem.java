@@ -1,16 +1,5 @@
 package src.Data;
 
-import java.util.ArrayList;
-
-import src.SearchAlgorithms.AStar;
-import src.SearchAlgorithms.BreadthFirst;
-import src.SearchAlgorithms.DepthFirst;
-import src.SearchAlgorithms.DepthLimited;
-import src.SearchAlgorithms.GreedyBF;
-import src.SearchAlgorithms.IterativeDeepingDF;
-import src.SearchAlgorithms.SearchAlgorithm;
-import src.SearchAlgorithms.UniformCost;
-
 /**
  * A class representing the problem of getting from Szczecin to Krakow.
  * 
@@ -34,25 +23,25 @@ public class Problem {
 	 */
 	public Problem() {
 		g = new Graph(10);
-		g.addEdge(new DirectedEdge(States.Szczecin, States.Gdansk, 320, "T1"));
-		g.addEdge(new DirectedEdge(States.Szczecin, States.Poznan, 300, "T2"));
-		g.addEdge(new DirectedEdge(States.Szczecin, States.Wroclaw, 330, "T3"));
-		g.addEdge(new DirectedEdge(States.Wroclaw, States.Opole, 100, "T4"));
-		g.addEdge(new DirectedEdge(States.Opole, States.Katowice, 80, "T5"));
-		g.addEdge(new DirectedEdge(States.Katowice, States.Krakow, 100, "T6"));
-		g.addEdge(new DirectedEdge(States.Poznan, States.Opole, 240, "T7"));
-		g.addEdge(new DirectedEdge(States.Poznan, States.Lodz, 250, "T8"));
-		g.addEdge(new DirectedEdge(States.Poznan, States.Warszawa, 300, "T9"));
-		g.addEdge(new DirectedEdge(States.Warszawa, States.Krakow, 300, "T10"));
-		g.addEdge(new DirectedEdge(States.Lodz, States.Krakow, 220, "T11"));
-		g.addEdge(new DirectedEdge(States.Gdansk, States.Olsztyn, 170, "T12"));
-		g.addEdge(new DirectedEdge(States.Olsztyn, States.Warszawa, 210, "T13"));
-		g.addEdge(new DirectedEdge(States.Poznan, States.Wroclaw, 180, "T14"));
-		g.addEdge(new DirectedEdge(States.Wroclaw, States.Opole, 100, "T15"));
-		g.addEdge(new DirectedEdge(States.Poznan, States.Lodz, 240, "T16"));
-		g.addEdge(new DirectedEdge(States.Katowice, States.Krakow, 95, "T17"));
-		g.addEdge(new DirectedEdge(States.Krakow, States.Poznan, 30, "T18"));
-		g.addEdge(new DirectedEdge(States.Warszawa, States.Szczecin, 560, "T19"));
+		g.addEdge(new Action(States.Szczecin, States.Gdansk, 320, "T1"));
+		g.addEdge(new Action(States.Szczecin, States.Poznan, 300, "T2"));
+		g.addEdge(new Action(States.Szczecin, States.Wroclaw, 330, "T3"));
+		g.addEdge(new Action(States.Wroclaw, States.Opole, 100, "T4"));
+		g.addEdge(new Action(States.Opole, States.Katowice, 80, "T5"));
+		g.addEdge(new Action(States.Katowice, States.Krakow, 100, "T6"));
+		g.addEdge(new Action(States.Poznan, States.Opole, 240, "T7"));
+		g.addEdge(new Action(States.Poznan, States.Lodz, 250, "T8"));
+		g.addEdge(new Action(States.Poznan, States.Warszawa, 300, "T9"));
+		g.addEdge(new Action(States.Warszawa, States.Krakow, 300, "T10"));
+		g.addEdge(new Action(States.Lodz, States.Krakow, 220, "T11"));
+		g.addEdge(new Action(States.Gdansk, States.Olsztyn, 170, "T12"));
+		g.addEdge(new Action(States.Olsztyn, States.Warszawa, 210, "T13"));
+		g.addEdge(new Action(States.Poznan, States.Wroclaw, 180, "T14"));
+		g.addEdge(new Action(States.Wroclaw, States.Opole, 100, "T15"));
+		g.addEdge(new Action(States.Poznan, States.Lodz, 240, "T16"));
+		g.addEdge(new Action(States.Katowice, States.Krakow, 95, "T17"));
+		g.addEdge(new Action(States.Krakow, States.Poznan, 30, "T18"));
+		g.addEdge(new Action(States.Warszawa, States.Szczecin, 560, "T19"));
 	}
 
 	/**
@@ -63,44 +52,23 @@ public class Problem {
 	 *            The node to be checked
 	 * @return True if the node is a solution. False otherwise.
 	 */
-	public boolean goalTest(Node s) {
-		return s.getState().equals(States.Krakow);
+	public boolean goalTest(States s) {
+		return s.equals(States.Krakow);
 	}
 
-	/**
-	 * Returns the pathCost of a particular solution.
-	 * 
-	 * @param solution
-	 *            The solution to extract the cost from
-	 * @return An integer with the pathCost.
-	 */
-	public int pathCost(ArrayList<DirectedEdge> solution) {
-		int c = 0;
-		for (DirectedEdge w : solution) {
-			c = c + w.weight();
-		}
-		return c;
+	public States result(States s, Action a) {
+		return a.to();
 	}
 
-	/**
-	 * Solves the problem for the different algorithms required.
-	 */
-	public void solve(SearchAlgorithm s) {
-		s.printSolution();
-		new BreadthFirst(this).printSolution();
-		new DepthFirst(this).printSolution();
-		new UniformCost(this).printSolution();
-		new DepthLimited(this, 4).printSolution();
-		new IterativeDeepingDF(this).printSolution();
-		new GreedyBF(this).printSolution();
-		new AStar(this).printSolution();
+	public int stepCost(States s, Action a) {
+		return a.weight();
 	}
 
-	/**
-	 * 
-	 * @return a Graph object representing the state space of the problem
-	 */
-	public Graph getStateSpace() {
+	public Iterable<Action> actions(States s) {
+		return this.g.adj(s.ordinal());
+	}
+
+	public Graph getGraph() {
 		return this.g;
 	}
 

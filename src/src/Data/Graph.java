@@ -2,21 +2,21 @@ package src.Data;
 
 import java.util.ArrayList;
 
-import src.Data.DirectedEdge;
+import src.Data.Action;
 
 public class Graph {
 
 	private final int V; // number of vertices
 	private int E; // number of edges
-	private ArrayList<DirectedEdge>[] adj; // adjacency lists
+	private ArrayList<Action>[] adj; // adjacency lists
 
 	@SuppressWarnings("unchecked")
 	public Graph(int V) {
 		this.V = V;
 		this.E = 0;
-		adj = (ArrayList<DirectedEdge>[]) new ArrayList[V];
+		adj = (ArrayList<Action>[]) new ArrayList[V];
 		for (int v = 0; v < V; v++)
-			adj[v] = new ArrayList<DirectedEdge>();
+			adj[v] = new ArrayList<Action>();
 	}
 
 	/**
@@ -41,19 +41,19 @@ public class Graph {
 	 * @param e
 	 *            The edge to be added
 	 */
-	public void addEdge(DirectedEdge e) {
+	public void addEdge(Action e) {
 		adj[e.from().ordinal()].add(e);
 		E++;
 	}
 
-	public Iterable<DirectedEdge> adj(int v) {
+	public Iterable<Action> adj(int v) {
 		return adj[v];
 	}
 
-	public Iterable<DirectedEdge> edges() {
-		ArrayList<DirectedEdge> bag = new ArrayList<DirectedEdge>();
+	public Iterable<Action> edges() {
+		ArrayList<Action> bag = new ArrayList<Action>();
 		for (int v = 0; v < V; v++)
-			for (DirectedEdge e : adj[v])
+			for (Action e : adj[v])
 				bag.add(e);
 		return bag;
 	}
@@ -61,8 +61,8 @@ public class Graph {
 	public Graph transpose() {
 		Graph t = new Graph(V);
 		for (int i = 0; i < V; i++) {
-			for (DirectedEdge w : adj[i]) {
-				t.addEdge(new DirectedEdge(w.to(), w.from(), w.weight(), w.toString()));
+			for (Action w : adj[i]) {
+				t.addEdge(new Action(w.to(), w.from(), w.weight(), w.toString()));
 			}
 		}
 		return t;

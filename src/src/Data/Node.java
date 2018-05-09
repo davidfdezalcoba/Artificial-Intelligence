@@ -1,7 +1,5 @@
 package src.Data;
 
-import java.util.ArrayList;
-
 /**
  * A class with the Node structure for the given problem.
  * 
@@ -11,8 +9,9 @@ import java.util.ArrayList;
 public class Node {
 
 	private States state;
+	private Node parent;
+	private Action action;
 	private int pathCost;
-	private ArrayList<DirectedEdge> solution;
 
 	/**
 	 * Creates a new node with the state given, pathcost = 0 and an empty solution.
@@ -23,60 +22,54 @@ public class Node {
 	public Node(States c) {
 		state = c;
 		pathCost = 0;
-		solution = new ArrayList<DirectedEdge>();
+		parent = null;
+		action = null;
 	}
 
-	/**
-	 * Creates a new node with state c, pathcost p, and a solution a
-	 * 
-	 * @param c
-	 *            state
-	 * @param p
-	 *            pathcost
-	 * @param a
-	 *            solution
-	 */
-	public Node(States c, int p, ArrayList<DirectedEdge> a) {
-		state = c;
-		pathCost = p;
-		solution = a;
+	public Node(Problem problem, Node parent, Action action) {
+		this.state = problem.result(parent.getState(), action);
+		this.parent = parent;
+		this.action = action;
+		this.pathCost = parent.getPC() + problem.stepCost(parent.getState(), action);
 	}
 
 	public States getState() {
 		return this.state;
 	}
 
-	public ArrayList<DirectedEdge> getSol() {
-		return solution;
-	}
-
 	public int getPC() {
 		return this.pathCost;
 	}
 
-	/**
-	 * Checks if a node is in a goal state
-	 * 
-	 * @return - True if it is, False otherwise
-	 */
-	public boolean goalTest() {
-		return this.state.equals(States.Krakow);
+	public Node getParent() {
+		return this.parent;
 	}
 
-	/**
-	 * Prints a node to the stdout, giving: 
-	 * - The route to follow to get to Krakowif it is a solution Node 
-	 * - The state of Failure or Cutoff otherwise
-	 */
-	public void printNode() {
-		if (solution.isEmpty())
-			System.out.println(this.state);
-		else {
-			System.out.print("Szczecin");
-			for (DirectedEdge w : solution) {
-				System.out.print(" -> " + w);
-			}
-			System.out.println(". PathCost = " + pathCost);
-		}
+	public Action getAction() {
+		return this.action;
 	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other == null)
+			return false;
+		if (other == this)
+			return true;
+		if (!(other instanceof Node))
+			return false;
+		Node otherMyClass = (Node) other;
+		return otherMyClass.getState().equals(this.state);
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash = 17 * hash + (this.state != null ? this.state.hashCode() : 0);
+		return hash;
+	}
+
+	public String toString() {
+		return this.state.toString();
+	}
+
 }

@@ -1,65 +1,59 @@
 package src.SearchAlgorithms;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.PriorityQueue;
 
 import src.Comparators.HeuristicNodeComparator;
-import src.Data.DirectedEdge;
-import src.Data.Graph;
+import src.Data.Action;
 import src.Data.Node;
 import src.Data.Problem;
+import src.Data.Result;
+import src.Data.Solution;
 import src.Data.States;
 
-public class GreedyBF implements SearchAlgorithm {
+public class GreedyBF extends SearchAlgorithm {
 
-	private final Node failureNode = new Node(States.Failure);
-	private Node solutionNode;
-	private Problem p;
-	private PriorityQueue<Node> pq;
-	private ArrayList<States> marked;
+	private Problem problem;
+	private PriorityQueue<Node> frontier;
+	private HashSet<States> explored;
 
 	public GreedyBF(Problem p) {
 
-		this.p = p;
-		marked = new ArrayList<States>();
-		pq = new PriorityQueue<Node>(10, new HeuristicNodeComparator(p));
-		solutionNode = uc(p.getStateSpace());
+		this.problem = p;
+		explored = new HashSet<States>();
+		frontier = new PriorityQueue<Node>(10, new HeuristicNodeComparator(p));
+		result = uc();
 
 	}
 
-	private Node uc(Graph g) {
+	private Result uc() {
 
-		Node initial = new Node(p.initialState());
-		pq.add(initial);
+		Node initial = new Node(problem.initialState());
+		frontier.add(initial);
 
 		while (true) {
-			if (pq.isEmpty())
-				return this.failureNode;
-			Node x = pq.poll();
-			if (x.goalTest())
-				return x;
-			marked.add(x.getState());
 
-			for (DirectedEdge w : g.adj(x.getState().ordinal())) {
-				ArrayList<DirectedEdge> tmp = new ArrayList<DirectedEdge>(x.getSol());
-				tmp.add(w);
-				Node y = new Node(w.to(), x.getPC() + w.weight(), tmp);
+			if (frontier.isEmpty())
+				return failureRes;
 
-				if (!marked.contains(y.getState()) && !pq.contains(y)) {
-					pq.add(y);
+			Node node = frontier.poll();
+			if (problem.goalTest(node.getState()))
+				return new Solution(node);
+
+			explored.add(node.getState());
+
+			for (Action action : problem.actions(node.getState())) {
+
+				Node child = new Node(problem, node, action);
+
+				if (!explored.contains(child.getState()) && !frontier.contains(child)) {
+					frontier.add(child);
 				}
-				if (pq.removeIf((Node n) -> pq.contains(n) && n.getPC() > y.getPC()))
-					pq.add(y);
+				if (frontier.removeIf((Node n) -> frontier.contains(n) && n.getPC() > child.getPC()))
+					frontier.add(child);
 			}
 		}
 
-	}
-
-	@Override
-	public void printSolution() {
-		// TODO Auto-generated method stub
-		System.out.println("Greedy Best-First:");
-		this.solutionNode.printNode();
 	}
 
 }
