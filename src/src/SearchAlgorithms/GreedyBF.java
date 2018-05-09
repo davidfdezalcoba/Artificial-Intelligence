@@ -49,7 +49,7 @@ public class GreedyBF extends SearchAlgorithm {
 				if (!explored.contains(child.getState()) && !frontier.contains(child)) {
 					frontier.add(child);
 				}
-				if (frontier.removeIf((Node n) -> frontier.contains(n) && n.getPC() > child.getPC()))
+				if (frontier.removeIf((Node n) -> n.equals(child) && n.getPC() > child.getPC()))
 					frontier.add(child);
 			}
 		}
