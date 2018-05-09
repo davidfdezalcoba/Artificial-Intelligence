@@ -1,20 +1,14 @@
 package src.SearchAlgorithms;
 
-import java.util.ArrayList;
-import java.util.Stack;
-
-import src.Data.DirectedEdge;
-import src.Data.Graph;
+import src.Data.Action;
 import src.Data.Node;
 import src.Data.Problem;
-import src.Data.States;
+import src.Data.Result;
+import src.Data.Solution;
 
-public class DepthLimited {
+public class DepthLimited extends SearchAlgorithm {
 
-	private final Node cutoffNode = new Node(States.Cutoff);
-	private final Node failureNode = new Node(States.Failure);
 	private boolean cutoff;
-	private Node solutionNode;
 
 	public DepthLimited() {
 	}
@@ -22,52 +16,43 @@ public class DepthLimited {
 	public DepthLimited(Problem p, int limit) {
 
 		this.cutoff = false;
-		new Stack<Node>();
-		new ArrayList<States>();
-		this.solutionNode = dls(p.getStateSpace(), new Node(p.initialState()), limit);
+		this.result = dls(new Node(p.initialState()), p, limit);
 
 	}
 
-	private Node dls(Graph g, Node x, int limit) {
+	private Result dls(Node node, Problem problem, int limit) {
 
-		if (x.goalTest())
-			return x;
+		if (problem.goalTest(node.getState()))
+			return new Solution(node);
 
-		else if (limit == 0)
-			return this.cutoffNode;
+		else if (limit == 0) {
+			return cutoffRes;
+		}
 
 		else {
 
 			cutoff = false;
 
-			for (DirectedEdge w : g.adj(x.getState().ordinal())) {
+			for (Action action : problem.actions(node.getState())) {
 
-				// Create child node
-				ArrayList<DirectedEdge> tmp = new ArrayList<DirectedEdge>(x.getSol());
-				tmp.add(w);
-				Node y = new Node(w.to(), x.getPC() + w.weight(), tmp);
+				Node child = new Node(problem, node, action);
+				Result result = dls(child, problem, limit - 1);
 
-				Node result = dls(g, y, limit - 1);
-				if (result.equals(this.cutoffNode))
+				if (result.equals(cutoffRes))
 					cutoff = true;
-				else if (!result.equals(this.failureNode))
+				else if (!result.equals(failureRes))
 					return result;
 			}
 			if (cutoff)
-				return this.cutoffNode;
+				return cutoffRes;
 			else
-				return this.failureNode;
+				return failureRes;
 		}
 
 	}
 
-	public void printSolution() {
-		System.out.println("Depth Limited Search: ");
-		this.solutionNode.printNode();
-	}
-
-	public Node getResult() {
-		return this.solutionNode;
+	public Result getResult() {
+		return result;
 	}
 
 }

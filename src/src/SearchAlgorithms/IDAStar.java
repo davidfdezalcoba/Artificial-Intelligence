@@ -1,73 +1,64 @@
 package src.SearchAlgorithms;
 
-import java.util.ArrayList;
-
-import src.Data.DirectedEdge;
-import src.Data.Graph;
+import src.Data.Action;
 import src.Data.Node;
 import src.Data.Problem;
-import src.Data.States;
+import src.Data.Result;
+import src.Data.Solution;
 
-public class IDAStar implements SearchAlgorithm {
+public class IDAStar extends SearchAlgorithm {
 
-	private final Node failureNode = new Node(States.Failure);
-	private final Node cutoffNode = new Node(States.Cutoff);
 	private int smallestCutoff;
-	private Node solutionNode;;
 	private boolean cutoff;
-	private Problem p;
+	private Problem problem;
 
 	public IDAStar(Problem p) {
-		this.p = p;
-		this.smallestCutoff = 530;
 
+		this.problem = p;
+		this.smallestCutoff = 530;
 		this.cutoff = false;
-		solutionNode = iddf();
+		result = iddf();
+
 	}
 
-	private Node iddf() {
-		Node result = this.cutoffNode;
-		for (int i = 0; i < Integer.MAX_VALUE && result.getState().equals(cutoffNode.getState()); i = smallestCutoff) {
-			result = (dls(p.getStateSpace(), new Node(p.initialState()), i));
+	private Result iddf() {
+		Result result = cutoffRes;
+		for (int i = 530; i < Integer.MAX_VALUE && result.equals(cutoffRes); i = smallestCutoff) {
+			smallestCutoff = Integer.MAX_VALUE;
+			result = dls(new Node(problem.initialState()), problem, i);
 		}
 		return result;
 	}
 
-	private Node dls(Graph g, Node x, int limit) {
+	private Result dls(Node node, Problem problem, int limit) {
 
-		if (x.goalTest())
-			return x;
+		if (problem.goalTest(node.getState()))
+			return new Solution(node);
 
-		else if (limit <= 0)
-			return this.cutoffNode;
+		else if (node.getPC() + problem.h(node) > limit) {
+			smallestCutoff = node.getPC() + problem.h(node);
+			return cutoffRes;
+		}
 
 		else {
 
 			cutoff = false;
 
-			for (DirectedEdge w : g.adj(x.getState().ordinal())) {
+			for (Action action : problem.actions(node.getState())) {
 
-				// Create child node
-				ArrayList<DirectedEdge> tmp = new ArrayList<DirectedEdge>(x.getSol());
-				tmp.add(w);
-				Node y = new Node(w.to(), x.getPC() + w.weight(), tmp);
+				Node child = new Node(problem, node, action);
+				Result result = dls(child, problem, limit);
 
-				Node result = dls(g, y, limit - y.getPC());
-				if (result.equals(this.cutoffNode))
+				if (result.equals(cutoffRes))
 					cutoff = true;
-				else if (!result.equals(this.failureNode))
+				else if (!result.equals(failureRes))
 					return result;
 			}
 			if (cutoff)
-				return this.cutoffNode;
+				return cutoffRes;
 			else
-				return this.failureNode;
+				return failureRes;
 		}
 
-	}
-
-	public void printSolution() {
-		System.out.println("IDAStar:");
-		solutionNode.printNode();
 	}
 }
