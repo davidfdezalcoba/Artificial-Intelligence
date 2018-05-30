@@ -1,6 +1,6 @@
 # Artificial-Intelligence
 
-Artificial Intelligence project for University
+Artificial Intelligence project for UAM. Author: David Fernández Alcoba.
 
 The Diagrams for the first task are in the images:
 
