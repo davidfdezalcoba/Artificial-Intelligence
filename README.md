@@ -1,6 +1,7 @@
 # Artificial-Intelligence
 
 Artificial Intelligence project for UAM. Author: David Fernández Alcoba.
+The descrition for the task completion can be found in the file ai-tasks.pdf
 
 The Diagrams for the first task are in the images:
 
